@@ -71,11 +71,11 @@ class Game:
 
         :return: None
         """
-        for object in self.object_in_location:
+        for index, object in enumerate(self.object_in_location):
             if isinstance(object, str):
                 self.mobs.append(object)
             elif isinstance(object, dict):
-                self.location_to_move.append(list(object.keys())[0])
+                self.location_to_move.append((index, list(object.keys())[0]))
 
     def print(self):
         """
@@ -90,7 +90,7 @@ class Game:
         for mob in self.mobs:
             print(f'-- Монстра {mob}')
         for location in self.location_to_move:
-            print(f'-- Вход в локацию {location}')
+            print(f'-- Вход в локацию {location[1]}')
 
     def user_input(self):
         """
@@ -112,7 +112,7 @@ class Game:
                     continue
                 else:
                     for index, monster in enumerate(self.mobs):
-                        print(f'-- {index + 1}. {monster[1]}')
+                        print(f'-- {index + 1}. {monster}')
                     selected_mob = input('Какого монстра выбираете?: ')
                     if selected_mob.isalpha():
                         print('Необходимо вводить цифры!')
@@ -141,19 +141,19 @@ class Game:
                         print('Необходимо вводить цифры!')
                         continue
                     elif int(selected_loc) > len(self.location_to_move):
-                        print('Такой локции не существует!')
+                        print('Такой локации не существует!')
                         continue
-                    elif 'Hatch' in self.location_to_move[0]:
+                    elif 'Hatch' in self.location_to_move[0][1]:
                         if self.experience < self.exp_for_win:
                             return print('Слишком мало опыта для перехода в эту локацию!')
                         else:
                             return print('Вы побелили!!!')
                     else:
                         selected_loc = self.location_to_move[int(selected_loc) - 1]
-                        plus_time = re.search(self.re_time, selected_loc)
+                        plus_time = re.search(self.re_time, selected_loc[1])
                         self.time += Decimal(plus_time[1])
-                        self.object_in_location = self.object_in_location[selected_loc[0]]
-                        self.location_name.append(selected_loc)
+                        self.object_in_location = self.object_in_location[selected_loc[0]][selected_loc[1]]
+                        self.location_name.append(selected_loc[1])
                         self.location_name.pop(0)
                         self.mobs.clear()
                         self.location_to_move.clear()
@@ -162,7 +162,7 @@ class Game:
                         self.result_the_game.clear()
             elif choice == '3':
                 return print('Вы покидаете игру!')
-            if not choice.isalpha() or not choice.isdigit():
+            elif not choice.isalpha() or not choice.isdigit():
                 return print('Что вы вводите? Вводить нужно ТОЛЬКО цифры!')
 
     def run(self):
