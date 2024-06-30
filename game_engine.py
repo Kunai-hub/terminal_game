@@ -32,6 +32,7 @@ class Game:
         self.result_the_game = []
         self.mobs = []
         self.location_to_move = []
+        self.remaining_time_decimal = None
 
     def read_map(self):
         """
@@ -84,7 +85,7 @@ class Game:
         :return: None
         """
         print(f'\nВы находитесь в {self.location_name[0]}\n'
-              f'У вас {self.experience} опыта и осталось {datetime.timedelta(seconds=float(self.remaining_time))}\n'
+              f'У вас {self.experience} опыта и осталось {datetime.timedelta(seconds=float(self.remaining_time_decimal))}\n'
               f'Прошло уже {datetime.timedelta(seconds=float(self.time))}\n'
               f'Внутри вы видите:')
         for mob in self.mobs:
@@ -99,8 +100,12 @@ class Game:
         :return: вывод текущего состояния в терминал
         """
         while True:
-            # TODO: проверка времени!!!
-            self.print()
+            self.remaining_time_decimal = Decimal(self.remaining_time)
+            self.remaining_time_decimal = self.remaining_time_decimal - self.time
+            if self.remaining_time_decimal > 0:
+                self.print()
+            else:
+                return print('Ваше время вышло! Игра окончена!')
             choice = input('Выберите действие: \n'
                            '1. Атаковать монстра\n'
                            '2. Перейти в другую локацию\n'
@@ -132,7 +137,7 @@ class Game:
                         print('Нет переходов в другие локации, но зато вы можете сразить монстров!')
                         continue
                     else:
-                        return print('К сожалению, вы в тупике... Начните игру сначала!)')
+                        return print('К сожалению, вы в тупике... Игра окончена!)')
                 else:
                     for index, location in enumerate(self.location_to_move):
                         print(f'-- {index + 1}. {location[1]}')
@@ -145,7 +150,7 @@ class Game:
                         continue
                     elif 'Hatch' in self.location_to_move[0][1]:
                         if self.experience < self.exp_for_win:
-                            return print('Слишком мало опыта для перехода в эту локацию!')
+                            return print('Слишком мало опыта для перехода в эту локацию! Игра окончена!')
                         else:
                             return print('Вы побелили!!!')
                     else:
@@ -176,12 +181,15 @@ class Game:
         self.create_location()
         while True:
             self.user_input()
+            if self.remaining_time_decimal < 0:
+                print('TIME IS UP')
+                break
             state = input('Если вы хотите остаться в игре и продолжить, введите - \'yes\',\n'
                           'если вы хотите выйти из игры, введите - \'q\': ')
             if state == 'yes':
                 continue
             elif state == 'q':
-                print('GAME OVER')
+                print('YOU LEAVE')
                 break
 
 
