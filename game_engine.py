@@ -99,6 +99,7 @@ class Game:
         :return: вывод текущего состояния в терминал
         """
         while True:
+            # TODO: проверка времени!!!
             self.print()
             choice = input('Выберите действие: \n'
                            '1. Атаковать монстра\n'
@@ -126,3 +127,64 @@ class Game:
                         plus_time = re.search(self.re_time, selected_mob)
                         self.time += Decimal(plus_time[1])
             elif choice == '2':
+                if not self.location_to_move:
+                    if self.mobs:
+                        print('Нет переходов в другие локации, но зато вы можете сразить монстров!')
+                        continue
+                    else:
+                        return print('К сожалению, вы в тупике... Начните игру сначала!)')
+                else:
+                    for index, location in enumerate(self.location_to_move):
+                        print(f'-- {index + 1}. {location[1]}')
+                    selected_loc = input('В какую локацию желаете перейти?: ')
+                    if selected_loc.isalpha():
+                        print('Необходимо вводить цифры!')
+                        continue
+                    elif int(selected_loc) > len(self.location_to_move):
+                        print('Такой локции не существует!')
+                        continue
+                    elif 'Hatch' in self.location_to_move[0]:
+                        if self.experience < self.exp_for_win:
+                            return print('Слишком мало опыта для перехода в эту локацию!')
+                        else:
+                            return print('Вы побелили!!!')
+                    else:
+                        selected_loc = self.location_to_move[int(selected_loc) - 1]
+                        plus_time = re.search(self.re_time, selected_loc)
+                        self.time += Decimal(plus_time[1])
+                        self.object_in_location = self.object_in_location[selected_loc[0]]
+                        self.location_name.append(selected_loc)
+                        self.location_name.pop(0)
+                        self.mobs.clear()
+                        self.location_to_move.clear()
+                        self.create_location()
+                        self.write_result_in_file()
+                        self.result_the_game.clear()
+            elif choice == '3':
+                return print('Вы покидаете игру!')
+            if not choice.isalpha() or not choice.isdigit():
+                return print('Что вы вводите? Вводить нужно ТОЛЬКО цифры!')
+
+    def run(self):
+        """
+        Запуск игры
+
+        :return: None
+        """
+        self.read_map()
+        self.create_file()
+        self.create_location()
+        while True:
+            self.user_input()
+            state = input('Если вы хотите остаться в игре и продолжить, введите - \'yes\',\n'
+                          'если вы хотите выйти из игры, введите - \'q\': ')
+            if state == 'yes':
+                continue
+            elif state == 'q':
+                print('GAME OVER')
+                break
+
+
+if __name__ == '__main__':
+    console_game = Game()
+    console_game.run()
